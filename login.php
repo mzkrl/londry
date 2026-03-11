@@ -48,24 +48,41 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 render_header('Masuk');
 ?>
-<div class="row justify-content-center">
-    <div class="col-md-4">
-        <h3 class="mb-3 text-center">Masuk</h3>
-        <?php if ($error): ?>
-            <div class="alert alert-danger"><?= sanitize($error) ?></div>
-        <?php endif; ?>
-        <form method="post" novalidate>
-            <input type="hidden" name="csrf_token" value="<?= sanitize(csrf_token()) ?>">
-            <div class="mb-3">
-                <label for="username" class="form-label">Username</label>
-                <input type="text" class="form-control" id="username" name="username" required>
+<div class="row justify-content-center align-items-center" style="min-height: 70vh;">
+    <div class="col-md-5 col-lg-4">
+        <div class="card border-0 shadow-lg">
+            <div class="card-body p-5">
+                <div class="text-center mb-4">
+                    <div class="bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 64px; height: 64px;">
+                        <span class="fs-2 fw-bold">L</span>
+                    </div>
+                    <h3 class="fw-bold">Selamat Datang</h3>
+                    <p class="text-muted">Silakan masuk ke akun Anda</p>
+                </div>
+
+                <?php if ($error): ?>
+                    <div class="alert alert-danger d-flex align-items-center border-0 small" role="alert">
+                        <div><?= sanitize($error) ?></div>
+                    </div>
+                <?php endif; ?>
+
+                <form method="post" novalidate>
+                    <input type="hidden" name="csrf_token" value="<?= sanitize(csrf_token()) ?>">
+                    <div class="mb-3">
+                        <label for="username" class="form-label small fw-bold">Username</label>
+                        <input type="text" class="form-control form-control-lg bg-light border-0" id="username" name="username" placeholder="Masukkan username" required autofocus>
+                    </div>
+                    <div class="mb-4">
+                        <label for="password" class="form-label small fw-bold">Password</label>
+                        <input type="password" class="form-control form-control-lg bg-light border-0" id="password" name="password" placeholder="Masukkan password" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-lg w-100 shadow-sm">Masuk Sekarang</button>
+                </form>
             </div>
-            <div class="mb-3">
-                <label for="password" class="form-label">Password</label>
-                <input type="password" class="form-control" id="password" name="password" required>
-            </div>
-            <button type="submit" class="btn btn-primary w-100">Masuk</button>
-        </form>
+        </div>
+        <div class="text-center mt-4">
+            <p class="small text-muted">&copy; <?= date('Y') ?> Londry System. Versi 1.0</p>
+        </div>
     </div>
 </div>
 <?php

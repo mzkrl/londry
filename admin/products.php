@@ -76,95 +76,137 @@ $products = $pdo->query('SELECT id, nama_produk, harga_produk FROM products ORDE
 
 render_header('Admin - Produk', 'products');
 ?>
+<div class="row mb-4 align-items-center">
+    <div class="col-md-6">
+        <h2 class="fw-bold h4 mb-0 text-dark">Manajemen Produk</h2>
+        <p class="text-muted mb-0">Kelola daftar layanan dan harga laundry</p>
+    </div>
+    <div class="col-md-6 text-md-end mt-3 mt-md-0">
+        <button class="btn btn-primary shadow-sm" data-bs-toggle="modal" data-bs-target="#addModal">
+            <span class="me-1">+</span> Tambah Produk Baru
+        </button>
+    </div>
+</div>
+
 <?php if ($error): ?>
-    <div class="alert alert-danger"><?= sanitize($error) ?></div>
+    <div class="alert alert-danger border-0 shadow-sm alert-dismissible fade show" role="alert">
+        <?= sanitize($error) ?>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
 <?php endif; ?>
 <?php if ($success): ?>
-    <div class="alert alert-success"><?= sanitize($success) ?></div>
+    <div class="alert alert-success border-0 shadow-sm alert-dismissible fade show" role="alert">
+        <?= sanitize($success) ?>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
 <?php endif; ?>
 
-<div class="row">
-    <div class="col-md-5">
-        <div class="card mb-4">
-            <div class="card-header">Tambah Produk</div>
-            <div class="card-body">
-                <form method="post">
+<div class="card border-0 shadow-sm">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0 align-middle">
+                <thead class="bg-light">
+                <tr>
+                    <th class="px-4 py-3">Nama Produk</th>
+                    <th class="px-4 py-3 text-end">Harga (Rp)</th>
+                    <th class="px-4 py-3 text-center" style="width: 200px;">Aksi</th>
+                </tr>
+                </thead>
+                <tbody>
+                <?php foreach ($products as $product): ?>
+                    <tr>
+                        <td class="px-4 py-3">
+                            <div class="fw-bold text-dark"><?= sanitize($product['nama_produk']) ?></div>
+                            <small class="text-muted">ID: #<?= $product['id'] ?></small>
+                        </td>
+                        <td class="px-4 py-3 text-end fw-bold text-primary">
+                            Rp <?= number_format((float)$product['harga_produk'], 0, ',', '.') ?>
+                        </td>
+                        <td class="px-4 py-3">
+                            <div class="d-flex justify-content-center gap-2">
+                                <button class="btn btn-sm btn-light border" data-bs-toggle="modal" data-bs-target="#editModal<?= $product['id'] ?>">
+                                    Ubah
+                                </button>
+                                <form method="post" onsubmit="return confirm('Hapus produk ini?');" class="d-inline">
+                                    <input type="hidden" name="csrf_token" value="<?= sanitize(csrf_token()) ?>">
+                                    <input type="hidden" name="action" value="delete">
+                                    <input type="hidden" name="id" value="<?= $product['id'] ?>">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger">Hapus</button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+
+                    <!-- Edit Modal -->
+                    <div class="modal fade" id="editModal<?= $product['id'] ?>" tabindex="-1" aria-hidden="true">
+                        <div class="modal-dialog modal-dialog-centered">
+                            <div class="modal-content border-0 shadow-lg">
+                                <div class="modal-header border-0 pb-0">
+                                    <h5 class="modal-title fw-bold">Ubah Produk</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <form method="post">
+                                    <div class="modal-body p-4">
+                                        <input type="hidden" name="csrf_token" value="<?= sanitize(csrf_token()) ?>">
+                                        <input type="hidden" name="action" value="update">
+                                        <input type="hidden" name="id" value="<?= $product['id'] ?>">
+                                        <div class="mb-3">
+                                            <label class="form-label small fw-bold text-muted">Nama Produk</label>
+                                            <input type="text" class="form-control bg-light border-0" name="nama_produk" value="<?= sanitize($product['nama_produk']) ?>" required>
+                                        </div>
+                                        <div class="mb-0">
+                                            <label class="form-label small fw-bold text-muted">Harga (Rp)</label>
+                                            <input type="number" step="100" class="form-control bg-light border-0" name="harga_produk" value="<?= $product['harga_produk'] ?>" required>
+                                        </div>
+                                    </div>
+                                    <div class="modal-footer border-0 pt-0">
+                                        <button type="button" class="btn btn-light" data-bs-toggle="modal">Batal</button>
+                                        <button type="submit" class="btn btn-primary px-4">Simpan Perubahan</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                <?php endforeach; ?>
+                <?php if (empty($products)): ?>
+                    <tr>
+                        <td colspan="3" class="text-center py-5 text-muted">
+                            Belum ada produk yang ditambahkan.
+                        </td>
+                    </tr>
+                <?php endif; ?>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Add Modal -->
+<div class="modal fade" id="addModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title fw-bold">Tambah Produk Baru</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="post">
+                <div class="modal-body p-4">
                     <input type="hidden" name="csrf_token" value="<?= sanitize(csrf_token()) ?>">
                     <input type="hidden" name="action" value="create">
                     <div class="mb-3">
-                        <label class="form-label" for="nama_produk">Nama Produk</label>
-                        <input type="text" class="form-control" id="nama_produk" name="nama_produk" required>
+                        <label class="form-label small fw-bold text-muted">Nama Produk</label>
+                        <input type="text" class="form-control bg-light border-0" name="nama_produk" placeholder="Contoh: Cuci Kering 1kg" required>
                     </div>
-                    <div class="mb-3">
-                        <label class="form-label" for="harga_produk">Harga (Rp)</label>
-                        <input type="number" step="100" class="form-control" id="harga_produk" name="harga_produk" required>
+                    <div class="mb-0">
+                        <label class="form-label small fw-bold text-muted">Harga (Rp)</label>
+                        <input type="number" step="100" class="form-control bg-light border-0" name="harga_produk" placeholder="0" required>
                     </div>
-                    <button type="submit" class="btn btn-primary">Simpan</button>
-                </form>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-7">
-        <div class="card mb-4">
-            <div class="card-header">Daftar Produk</div>
-            <div class="card-body p-0">
-                <div class="table-responsive">
-                    <table class="table table-striped mb-0 align-middle">
-                        <thead>
-                        <tr>
-                            <th>Nama</th>
-                            <th>Harga (Rp)</th>
-                            <th>Aksi</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        <?php foreach ($products as $product): ?>
-                            <tr>
-                                <td><?= sanitize($product['nama_produk']) ?></td>
-                                <td><?= number_format((float)$product['harga_produk'], 0, ',', '.') ?></td>
-                                <td>
-                                    <div class="d-flex gap-2">
-                                        <button class="btn btn-sm btn-secondary" data-bs-toggle="modal" data-bs-target="#editModal<?= $product['id'] ?>">Ubah</button>
-                                        <form method="post" onsubmit="return confirm('Hapus produk ini?');">
-                                            <input type="hidden" name="csrf_token" value="<?= sanitize(csrf_token()) ?>">
-                                            <input type="hidden" name="action" value="delete">
-                                            <input type="hidden" name="id" value="<?= $product['id'] ?>">
-                                            <button type="submit" class="btn btn-sm btn-danger">Hapus</button>
-                                        </form>
-                                    </div>
-                                </td>
-                            </tr>
-                            <div class="modal fade" id="editModal<?= $product['id'] ?>" tabindex="-1" aria-hidden="true">
-                                <div class="modal-dialog">
-                                    <div class="modal-content">
-                                        <div class="modal-header">
-                                            <h5 class="modal-title">Ubah Produk</h5>
-                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                        </div>
-                                        <div class="modal-body">
-                                            <form method="post">
-                                                <input type="hidden" name="csrf_token" value="<?= sanitize(csrf_token()) ?>">
-                                                <input type="hidden" name="action" value="update">
-                                                <input type="hidden" name="id" value="<?= $product['id'] ?>">
-                                                <div class="mb-3">
-                                                    <label class="form-label" for="nama_produk_<?= $product['id'] ?>">Nama Produk</label>
-                                                    <input type="text" class="form-control" id="nama_produk_<?= $product['id'] ?>" name="nama_produk" value="<?= sanitize($product['nama_produk']) ?>" required>
-                                                </div>
-                                                <div class="mb-3">
-                                                    <label class="form-label" for="harga_produk_<?= $product['id'] ?>">Harga (Rp)</label>
-                                                    <input type="number" step="100" class="form-control" id="harga_produk_<?= $product['id'] ?>" name="harga_produk" value="<?= $product['harga_produk'] ?>" required>
-                                                </div>
-                                                <button type="submit" class="btn btn-primary">Simpan</button>
-                                            </form>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        <?php endforeach; ?>
-                        </tbody>
-                    </table>
                 </div>
-            </div>
+                <div class="modal-footer border-0 pt-0">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-primary px-4">Simpan Produk</button>
+                </div>
+            </form>
         </div>
     </div>
 </div>

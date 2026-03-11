@@ -85,110 +85,165 @@ $users = $pdo->query('SELECT id, username, role, active, created_at FROM users O
 
 render_header('Admin - Pengguna', 'users');
 ?>
+<div class="row mb-4 align-items-center">
+    <div class="col-md-6">
+        <h2 class="fw-bold h4 mb-0 text-dark">Manajemen Pengguna</h2>
+        <p class="text-muted mb-0">Kelola akses akun kasir, admin, dan owner</p>
+    </div>
+    <div class="col-md-6 text-md-end mt-3 mt-md-0">
+        <button class="btn btn-primary shadow-sm" data-bs-toggle="modal" data-bs-target="#addUser">
+            <span class="me-1">+</span> Tambah Pengguna Baru
+        </button>
+    </div>
+</div>
+
 <?php if ($error): ?>
-    <div class="alert alert-danger"><?= sanitize($error) ?></div>
+    <div class="alert alert-danger border-0 shadow-sm alert-dismissible fade show" role="alert">
+        <?= sanitize($error) ?>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
 <?php endif; ?>
 <?php if ($success): ?>
-    <div class="alert alert-success"><?= sanitize($success) ?></div>
+    <div class="alert alert-success border-0 shadow-sm alert-dismissible fade show" role="alert">
+        <?= sanitize($success) ?>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
 <?php endif; ?>
 
-<div class="row">
-    <div class="col-md-5">
-        <div class="card mb-4">
-            <div class="card-header">Tambah Pengguna</div>
-            <div class="card-body">
-                <form method="post">
+<div class="card border-0 shadow-sm">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0 align-middle">
+                <thead class="bg-light">
+                <tr>
+                    <th class="px-4 py-3">Username</th>
+                    <th class="px-4 py-3">Peran</th>
+                    <th class="px-4 py-3">Status</th>
+                    <th class="px-4 py-3 text-center" style="width: 150px;">Aksi</th>
+                </tr>
+                </thead>
+                <tbody>
+                <?php foreach ($users as $user): ?>
+                    <tr>
+                        <td class="px-4 py-3">
+                            <div class="d-flex align-items-center">
+                                <div class="bg-light text-primary rounded-circle d-inline-flex align-items-center justify-content-center me-2 fw-bold" style="width: 32px; height: 32px; font-size: 0.8rem;">
+                                    <?= strtoupper(substr($user['username'], 0, 1)) ?>
+                                </div>
+                                <div>
+                                    <div class="fw-bold text-dark"><?= sanitize($user['username']) ?></div>
+                                    <small class="text-muted">Dibuat: <?= date('d M Y', strtotime($user['created_at'])) ?></small>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-4 py-3 text-uppercase small fw-bold">
+                            <span class="badge bg-<?= $user['role'] === 'admin' ? 'danger' : ($user['role'] === 'owner' ? 'info' : 'success') ?> bg-opacity-10 text-<?= $user['role'] === 'admin' ? 'danger' : ($user['role'] === 'owner' ? 'info' : 'success') ?>">
+                                <?= sanitize($user['role']) ?>
+                            </span>
+                        </td>
+                        <td class="px-4 py-3">
+                            <?php if ($user['active']): ?>
+                                <span class="badge rounded-pill bg-success">Aktif</span>
+                            <?php else: ?>
+                                <span class="badge rounded-pill bg-secondary">Nonaktif</span>
+                            <?php endif; ?>
+                        </td>
+                        <td class="px-4 py-3 text-center">
+                            <button class="btn btn-sm btn-light border" data-bs-toggle="modal" data-bs-target="#editUser<?= $user['id'] ?>">Ubah</button>
+                        </td>
+                    </tr>
+
+                    <!-- Edit Modal -->
+                    <div class="modal fade" id="editUser<?= $user['id'] ?>" tabindex="-1" aria-hidden="true">
+                        <div class="modal-dialog modal-dialog-centered">
+                            <div class="modal-content border-0 shadow-lg">
+                                <div class="modal-header border-0 pb-0">
+                                    <h5 class="modal-title fw-bold">Ubah Pengguna</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <form method="post">
+                                    <div class="modal-body p-4">
+                                        <input type="hidden" name="csrf_token" value="<?= sanitize(csrf_token()) ?>">
+                                        <input type="hidden" name="action" value="update">
+                                        <input type="hidden" name="id" value="<?= $user['id'] ?>">
+                                        
+                                        <div class="mb-3">
+                                            <label class="form-label small fw-bold text-muted">Username</label>
+                                            <input type="text" class="form-control bg-light border-0" name="username" value="<?= sanitize($user['username']) ?>" required>
+                                        </div>
+                                        
+                                        <div class="mb-3">
+                                            <label class="form-label small fw-bold text-muted">Password Baru</label>
+                                            <input type="password" class="form-control bg-light border-0" name="password" placeholder="Kosongkan jika tidak ingin diubah">
+                                        </div>
+                                        
+                                        <div class="mb-3">
+                                            <label class="form-label small fw-bold text-muted">Peran</label>
+                                            <select class="form-select bg-light border-0" name="role" required>
+                                                <option value="kasir" <?= $user['role'] === 'kasir' ? 'selected' : '' ?>>Kasir</option>
+                                                <option value="admin" <?= $user['role'] === 'admin' ? 'selected' : '' ?>>Admin</option>
+                                                <option value="owner" <?= $user['role'] === 'owner' ? 'selected' : '' ?>>Owner</option>
+                                            </select>
+                                        </div>
+                                        
+                                        <div class="form-check form-switch mt-4">
+                                            <input class="form-check-input" type="checkbox" id="active_<?= $user['id'] ?>" name="active" value="1" <?= $user['active'] ? 'checked' : '' ?>>
+                                            <label class="form-check-label small fw-bold text-muted" for="active_<?= $user['id'] ?>">Status Akun Aktif</label>
+                                        </div>
+                                    </div>
+                                    <div class="modal-footer border-0 pt-0">
+                                        <button type="button" class="btn btn-light" data-bs-dismiss="modal">Batal</button>
+                                        <button type="submit" class="btn btn-primary px-4">Simpan Perubahan</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                <?php endforeach; ?>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Add Modal -->
+<div class="modal fade" id="addUser" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title fw-bold">Tambah Pengguna Baru</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="post">
+                <div class="modal-body p-4">
                     <input type="hidden" name="csrf_token" value="<?= sanitize(csrf_token()) ?>">
                     <input type="hidden" name="action" value="create">
+                    
                     <div class="mb-3">
-                        <label class="form-label" for="username">Username</label>
-                        <input type="text" class="form-control" id="username" name="username" required>
+                        <label class="form-label small fw-bold text-muted">Username</label>
+                        <input type="text" class="form-control bg-light border-0" name="username" placeholder="Masukkan username" required>
                     </div>
+                    
                     <div class="mb-3">
-                        <label class="form-label" for="password">Password</label>
-                        <input type="password" class="form-control" id="password" name="password" required>
+                        <label class="form-label small fw-bold text-muted">Password</label>
+                        <input type="password" class="form-control bg-light border-0" name="password" placeholder="Masukkan password" required>
                     </div>
-                    <div class="mb-3">
-                        <label class="form-label" for="role">Peran</label>
-                        <select class="form-select" id="role" name="role" required>
-                            <option value="">Pilih peran</option>
+                    
+                    <div class="mb-0">
+                        <label class="form-label small fw-bold text-muted">Peran</label>
+                        <select class="form-select bg-light border-0" name="role" required>
+                            <option value="">Pilih peran...</option>
                             <option value="kasir">Kasir</option>
                             <option value="admin">Admin</option>
                             <option value="owner">Owner</option>
                         </select>
                     </div>
-                    <button type="submit" class="btn btn-primary">Simpan</button>
-                </form>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-7">
-        <div class="card mb-4">
-            <div class="card-header">Daftar Pengguna</div>
-            <div class="card-body p-0">
-                <div class="table-responsive">
-                    <table class="table table-striped mb-0 align-middle">
-                        <thead>
-                        <tr>
-                            <th>Username</th>
-                            <th>Peran</th>
-                            <th>Status</th>
-                            <th>Aksi</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        <?php foreach ($users as $user): ?>
-                            <tr>
-                                <td><?= sanitize($user['username']) ?></td>
-                                <td><?= sanitize($user['role']) ?></td>
-                                <td><?= $user['active'] ? 'Aktif' : 'Nonaktif' ?></td>
-                                <td>
-                                    <button class="btn btn-sm btn-secondary" data-bs-toggle="modal" data-bs-target="#editUser<?= $user['id'] ?>">Ubah</button>
-                                </td>
-                            </tr>
-                            <div class="modal fade" id="editUser<?= $user['id'] ?>" tabindex="-1" aria-hidden="true">
-                                <div class="modal-dialog">
-                                    <div class="modal-content">
-                                        <div class="modal-header">
-                                            <h5 class="modal-title">Ubah Pengguna</h5>
-                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                        </div>
-                                        <div class="modal-body">
-                                            <form method="post">
-                                                <input type="hidden" name="csrf_token" value="<?= sanitize(csrf_token()) ?>">
-                                                <input type="hidden" name="action" value="update">
-                                                <input type="hidden" name="id" value="<?= $user['id'] ?>">
-                                                <div class="mb-3">
-                                                    <label class="form-label" for="username_<?= $user['id'] ?>">Username</label>
-                                                    <input type="text" class="form-control" id="username_<?= $user['id'] ?>" name="username" value="<?= sanitize($user['username']) ?>" required>
-                                                </div>
-                                                <div class="mb-3">
-                                                    <label class="form-label" for="password_<?= $user['id'] ?>">Password (kosongkan jika tidak diubah)</label>
-                                                    <input type="password" class="form-control" id="password_<?= $user['id'] ?>" name="password">
-                                                </div>
-                                                <div class="mb-3">
-                                                    <label class="form-label" for="role_<?= $user['id'] ?>">Peran</label>
-                                                    <select class="form-select" id="role_<?= $user['id'] ?>" name="role" required>
-                                                        <option value="kasir" <?= $user['role'] === 'kasir' ? 'selected' : '' ?>>Kasir</option>
-                                                        <option value="admin" <?= $user['role'] === 'admin' ? 'selected' : '' ?>>Admin</option>
-                                                        <option value="owner" <?= $user['role'] === 'owner' ? 'selected' : '' ?>>Owner</option>
-                                                    </select>
-                                                </div>
-                                                <div class="form-check mb-3">
-                                                    <input class="form-check-input" type="checkbox" id="active_<?= $user['id'] ?>" name="active" value="1" <?= $user['active'] ? 'checked' : '' ?>>
-                                                    <label class="form-check-label" for="active_<?= $user['id'] ?>">Aktif</label>
-                                                </div>
-                                                <button type="submit" class="btn btn-primary">Simpan</button>
-                                            </form>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        <?php endforeach; ?>
-                        </tbody>
-                    </table>
                 </div>
-            </div>
+                <div class="modal-footer border-0 pt-0">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-primary px-4">Simpan Pengguna</button>
+                </div>
+            </form>
         </div>
     </div>
 </div>

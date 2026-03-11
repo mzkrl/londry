@@ -99,31 +99,46 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 render_header('Kasir - Transaksi', 'kasir');
 ?>
+<div class="row mb-4">
+    <div class="col-12">
+        <h2 class="fw-bold h4 mb-0 text-dark">Panel Transaksi</h2>
+        <p class="text-muted">Kelola pesanan pelanggan dengan mudah</p>
+    </div>
+</div>
+
 <?php if ($error): ?>
-    <div class="alert alert-danger"><?= sanitize($error) ?></div>
+    <div class="alert alert-danger border-0 shadow-sm alert-dismissible fade show" role="alert">
+        <?= sanitize($error) ?>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
 <?php endif; ?>
 <?php if ($success): ?>
-    <div class="alert alert-success"><?= sanitize($success) ?></div>
+    <div class="alert alert-success border-0 shadow-sm alert-dismissible fade show" role="alert">
+        <?= sanitize($success) ?>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
 <?php endif; ?>
 
-<div class="row">
-    <div class="col-md-6">
-        <div class="card mb-4">
-            <div class="card-header">Produk</div>
+<div class="row g-4">
+    <div class="col-md-7">
+        <div class="card h-100 border-0 shadow-sm">
+            <div class="card-header bg-white py-3 border-0 d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0 fw-bold">Daftar Produk</h5>
+            </div>
             <div class="card-body p-0">
                 <div class="table-responsive">
-                    <table class="table table-striped mb-0">
-                        <thead>
+                    <table class="table table-hover mb-0 align-middle">
+                        <thead class="bg-light">
                         <tr>
-                            <th>Nama Produk</th>
-                            <th>Harga (Rp)</th>
+                            <th class="px-4 py-3">Nama Produk</th>
+                            <th class="px-4 py-3 text-end">Harga (Rp)</th>
                         </tr>
                         </thead>
                         <tbody>
                         <?php foreach ($products as $product): ?>
                             <tr>
-                                <td><?= sanitize($product['nama_produk']) ?></td>
-                                <td><?= number_format((float)$product['harga_produk'], 0, ',', '.') ?></td>
+                                <td class="px-4 py-3 fw-medium"><?= sanitize($product['nama_produk']) ?></td>
+                                <td class="px-4 py-3 text-end fw-bold text-primary">Rp <?= number_format((float)$product['harga_produk'], 0, ',', '.') ?></td>
                             </tr>
                         <?php endforeach; ?>
                         </tbody>
@@ -133,34 +148,86 @@ render_header('Kasir - Transaksi', 'kasir');
         </div>
     </div>
 
-    <div class="col-md-6">
-        <div class="card mb-4">
-            <div class="card-header">Proses Transaksi</div>
-            <div class="card-body">
-                <form method="post">
+    <div class="col-md-5">
+        <div class="card border-0 shadow-sm bg-white">
+            <div class="card-header bg-white py-3 border-0">
+                <h5 class="card-title mb-0 fw-bold">Proses Transaksi</h5>
+            </div>
+            <div class="card-body p-4">
+                <form method="post" id="transactionForm">
                     <input type="hidden" name="csrf_token" value="<?= sanitize(csrf_token()) ?>">
+                    
                     <div class="mb-3">
-                        <label class="form-label" for="nama_pelanggan">Nama Pelanggan</label>
-                        <input type="text" class="form-control" id="nama_pelanggan" name="nama_pelanggan" required>
+                        <label class="form-label small fw-bold text-muted" for="nama_pelanggan">Nama Pelanggan</label>
+                        <input type="text" class="form-control form-control-lg bg-light border-0 shadow-none" id="nama_pelanggan" name="nama_pelanggan" placeholder="Nama lengkap pelanggan" required>
                     </div>
+
                     <div class="mb-3">
-                        <label class="form-label" for="id_produk">Produk</label>
-                        <select class="form-select" id="id_produk" name="id_produk" required>
-                            <option value="">Pilih produk</option>
+                        <label class="form-label small fw-bold text-muted" for="id_produk">Pilih Produk</label>
+                        <select class="form-select form-select-lg bg-light border-0 shadow-none" id="id_produk" name="id_produk" required>
+                            <option value="">Pilih layanan...</option>
                             <?php foreach ($products as $product): ?>
-                                <option value="<?= $product['id'] ?>"><?= sanitize($product['nama_produk']) ?> - Rp <?= number_format((float)$product['harga_produk'], 0, ',', '.') ?></option>
+                                <option value="<?= $product['id'] ?>" data-price="<?= $product['harga_produk'] ?>">
+                                    <?= sanitize($product['nama_produk']) ?> - Rp <?= number_format((float)$product['harga_produk'], 0, ',', '.') ?>
+                                </option>
                             <?php endforeach; ?>
                         </select>
                     </div>
-                    <div class="mb-3">
-                        <label class="form-label" for="uang_bayar">Uang Bayar (Rp)</label>
-                        <input type="number" step="100" class="form-control" id="uang_bayar" name="uang_bayar" required>
+
+                    <div class="mb-4">
+                        <label class="form-label small fw-bold text-muted" for="uang_bayar">Uang Bayar (Rp)</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light border-0 fw-bold">Rp</span>
+                            <input type="number" step="100" class="form-control form-control-lg bg-light border-0 shadow-none" id="uang_bayar" name="uang_bayar" placeholder="0" required>
+                        </div>
                     </div>
-                    <button type="submit" class="btn btn-success">Simpan & Cetak</button>
+
+                    <hr class="my-4 opacity-10">
+
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="text-muted">Total Harga</span>
+                        <span class="fw-bold" id="display-total">Rp 0</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-4">
+                        <span class="text-muted">Kembalian</span>
+                        <span class="fw-bold text-success" id="display-change">Rp 0</span>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary btn-lg w-100 py-3 shadow-sm fw-bold">
+                        Selesaikan Transaksi & Cetak
+                    </button>
                 </form>
             </div>
         </div>
     </div>
 </div>
+
+<script>
+    const productSelect = document.getElementById('id_produk');
+    const cashInput = document.getElementById('uang_bayar');
+    const displayTotal = document.getElementById('display-total');
+    const displayChange = document.getElementById('display-change');
+
+    function updateCalculations() {
+        const selectedOption = productSelect.options[productSelect.selectedIndex];
+        const price = selectedOption && selectedOption.dataset.price ? parseFloat(selectedOption.dataset.price) : 0;
+        const cash = cashInput.value ? parseFloat(cashInput.value) : 0;
+        const change = cash - price;
+
+        displayTotal.innerText = 'Rp ' + price.toLocaleString('id-ID');
+        displayChange.innerText = 'Rp ' + (change >= 0 ? change.toLocaleString('id-ID') : '0');
+        
+        if (cash > 0 && change < 0) {
+            displayChange.classList.add('text-danger');
+            displayChange.classList.remove('text-success');
+        } else {
+            displayChange.classList.remove('text-danger');
+            displayChange.classList.add('text-success');
+        }
+    }
+
+    productSelect.addEventListener('change', updateCalculations);
+    cashInput.addEventListener('input', updateCalculations);
+</script>
 <?php
 render_footer();

@@ -15,24 +15,35 @@ $products = $pdo->query('SELECT nama_produk, harga_produk FROM products ORDER BY
 
 render_header('Owner - Produk', 'products');
 ?>
-<div class="card">
-    <div class="card-header">Produk</div>
+<div class="row mb-4">
+    <div class="col-12">
+        <h2 class="fw-bold h4 mb-0 text-dark">Daftar Produk</h2>
+        <p class="text-muted">Lihat daftar layanan dan harga laundry yang aktif</p>
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm">
     <div class="card-body p-0">
         <div class="table-responsive">
-            <table class="table table-striped mb-0">
-                <thead>
+            <table class="table table-hover mb-0 align-middle">
+                <thead class="bg-light">
                 <tr>
-                    <th>Nama</th>
-                    <th>Harga (Rp)</th>
+                    <th class="px-4 py-3">Nama Produk</th>
+                    <th class="px-4 py-3 text-end">Harga (Rp)</th>
                 </tr>
                 </thead>
                 <tbody>
                 <?php foreach ($products as $product): ?>
                     <tr>
-                        <td><?= sanitize($product['nama_produk']) ?></td>
-                        <td><?= number_format((float)$product['harga_produk'], 0, ',', '.') ?></td>
+                        <td class="px-4 py-3 fw-bold text-dark"><?= sanitize($product['nama_produk']) ?></td>
+                        <td class="px-4 py-3 text-end fw-bold text-primary">Rp <?= number_format((float)$product['harga_produk'], 0, ',', '.') ?></td>
                     </tr>
                 <?php endforeach; ?>
+                <?php if (empty($products)): ?>
+                    <tr>
+                        <td colspan="2" class="text-center py-5 text-muted">Belum ada produk yang tersedia.</td>
+                    </tr>
+                <?php endif; ?>
                 </tbody>
             </table>
         </div>

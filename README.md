@@ -37,6 +37,6 @@ A native PHP POS dan sistem operasional laundry sesuai spesifikasi di `tech_spec
 ## Menjalankan
 Jalankan server PHP built-in:
 ```bash
-php -S localhost:8000 -t /path/ke/londry
+php -S localhost:8000 -t .
 ```
 Lalu buka `http://localhost:8000/login.php`.

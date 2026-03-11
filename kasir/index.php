@@ -55,13 +55,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Generate unique order number with collision retry per F-003-RQ-005
     $maxRetries = 5;
     $nomorUnik = '';
+    $isUnique = false;
     for ($i = 0; $i < $maxRetries; $i++) {
         $nomorUnik = strtoupper(bin2hex(random_bytes(4)));
         $check = $pdo->prepare('SELECT COUNT(*) FROM transactions WHERE nomor_unik = :nomor_unik');
         $check->execute([':nomor_unik' => $nomorUnik]);
         if ((int)$check->fetchColumn() === 0) {
+            $isUnique = true;
             break;
         }
+    }
+    if (!$isUnique) {
+        flash('error', 'Gagal membuat nomor pesanan unik. Coba lagi.');
+        redirect('/kasir/index.php');
     }
 
     $driver = $pdo->getAttribute(PDO::ATTR_DRIVER_NAME);

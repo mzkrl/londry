@@ -1,13 +1,14 @@
 # Londry (Sistem Laundry)
 
-A native PHP POS dan sistem operasional laundry sesuai spesifikasi di `tech_spec.md`. Aplikasi ini tidak menggunakan dependensi eksternal (tanpa Composer/NPM) dan siap dijalankan di hosting standar PHP.
+Aplikasi web POS dan manajemen operasional laundry menggunakan PHP native sesuai `tech_spec.md`. Tanpa dependensi eksternal (tanpa Composer/NPM), siap dijalankan di hosting standar PHP.
 
 ## Fitur Utama
-- Autentikasi berbasis peran (Kasir, Admin, Owner) dengan sesi PHP.
-- Kasir: lihat produk, proses transaksi tunai, cetak bukti transaksi, pencatatan log otomatis.
-- Admin: CRUD produk, kelola pengguna (aktif/nonaktif, ubah peran & password), pencatatan log otomatis.
-- Owner: lihat katalog produk, laporan transaksi dengan filter tanggal, tinjau log aktivitas (read-only).
-- Pencatatan aktivitas pada tabel `log` untuk semua tindakan Kasir/Admin.
+- **Autentikasi** berbasis peran (Kasir, Admin, Owner) dengan sesi PHP, cookie HttpOnly & SameSite.
+- **Kasir:** lihat produk, proses transaksi tunai, cetak bukti transaksi (nomor unik anti-collision), pencatatan log otomatis.
+- **Admin:** CRUD produk, kelola pengguna (aktif/nonaktif, ubah peran & password), pencatatan log otomatis.
+- **Owner:** lihat katalog produk, laporan transaksi dengan filter tanggal (validasi range), tinjau log aktivitas (read-only).
+- Pencatatan aktivitas detail pada tabel `log` (termasuk nama produk/user/nomor transaksi).
+- UI responsif dengan Bootstrap 5.3.8 via CDN.
 
 ## Konfigurasi
 1. Salin `.env.example` menjadi `.env` lalu isi kredensial database:
@@ -20,21 +21,38 @@ A native PHP POS dan sistem operasional laundry sesuai spesifikasi di `tech_spec
    DB_PASS=password
    ```
 2. Buat database dan jalankan schema yang sesuai:
-   - **MySQL:** `schema.sql`
+   - **MySQL (default):** `schema.sql`
    - **PostgreSQL:** `schema_pgsql.sql`
-3. Buat hash password untuk akun admin awal: `php hash.php` lalu INSERT ke tabel `users`, atau login via `/login.php` setelahnya untuk membuat pengguna lain.
+3. Buat hash password untuk akun admin awal:
+   ```bash
+   php hash.php
+   ```
+   Lalu INSERT ke tabel `users`:
+   ```sql
+   INSERT INTO users (username, password, role) VALUES ('admin', '<hash_dari_hash.php>', 'admin');
+   ```
 
 ## Struktur Direktori
-- `includes/` utilitas bersama (koneksi PDO, autentikasi, CSRF, template, logger).
-- `kasir/` transaksi dan cetak struk.
-- `admin/` kelola produk & pengguna.
-- `owner/` laporan transaksi & log aktivitas.
+```
+londry/
+├── includes/    # Utilitas: koneksi PDO, autentikasi, CSRF, template, logger
+├── kasir/       # Transaksi dan cetak struk
+├── admin/       # Kelola produk & pengguna
+├── owner/       # Laporan transaksi & log aktivitas (read-only)
+├── schema.sql   # DDL MySQL
+├── schema_pgsql.sql  # DDL PostgreSQL
+├── hash.php     # Helper: buat hash password untuk init admin
+└── .env.example # Contoh konfigurasi database
+```
 
 ## Keamanan
-- Semua input difilter dengan prepared statement PDO.
+- Semua input difilter dengan prepared statement PDO (anti SQL injection).
 - CSRF token pada seluruh form tulis.
 - Password disimpan dengan `password_hash()` / `password_verify()`.
-- Peran Owner hanya memiliki akses baca.
+- Session cookie: HttpOnly, SameSite=Strict.
+- Peran Owner hanya memiliki akses baca — tidak ada kontrol tulis.
+- Role isolation: akses ke halaman role lain akan redirect ke dashboard sendiri.
+- Log aktivitas bersifat immutable (INSERT-only, tidak bisa diubah/dihapus).
 
 ## Menjalankan
 Jalankan server PHP built-in:

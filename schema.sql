@@ -5,7 +5,7 @@ CREATE TABLE IF NOT EXISTS users (
     id INT AUTO_INCREMENT PRIMARY KEY,
     username VARCHAR(100) NOT NULL UNIQUE,
     password VARCHAR(255) NOT NULL,
-    role VARCHAR(10) NOT NULL,
+    role VARCHAR(10) NOT NULL CHECK (role IN ('kasir', 'admin', 'owner')),
     active TINYINT(1) NOT NULL DEFAULT 1,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB;
@@ -13,7 +13,7 @@ CREATE TABLE IF NOT EXISTS users (
 CREATE TABLE IF NOT EXISTS products (
     id INT AUTO_INCREMENT PRIMARY KEY,
     nama_produk VARCHAR(150) NOT NULL,
-    harga_produk DECIMAL(12,2) NOT NULL,
+    harga_produk DECIMAL(12,2) NOT NULL CHECK (harga_produk > 0),
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB;
 
@@ -22,8 +22,8 @@ CREATE TABLE IF NOT EXISTS transactions (
     id_produk INT NOT NULL,
     nama_pelanggan VARCHAR(150) NOT NULL,
     nomor_unik VARCHAR(50) NOT NULL UNIQUE,
-    uang_bayar DECIMAL(12,2) NOT NULL,
-    uang_kembali DECIMAL(12,2) NOT NULL,
+    uang_bayar DECIMAL(12,2) NOT NULL CHECK (uang_bayar >= 0),
+    uang_kembali DECIMAL(12,2) NOT NULL CHECK (uang_kembali >= 0),
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT fk_transactions_products FOREIGN KEY (id_produk) REFERENCES products (id)
 ) ENGINE=InnoDB;

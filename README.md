@@ -19,8 +19,10 @@ A native PHP POS dan sistem operasional laundry sesuai spesifikasi di `tech_spec
    DB_USER=root
    DB_PASS=password
    ```
-2. Buat database dan jalankan `schema.sql` pada MySQL 8.4+ atau PostgreSQL 17+.
-3. Buat akun admin awal langsung di tabel `users` (password harus di-hash dengan `password_hash`), lalu login via `/login.php` untuk membuat pengguna lain.
+2. Buat database dan jalankan schema yang sesuai:
+   - **MySQL:** `schema.sql`
+   - **PostgreSQL:** `schema_pgsql.sql`
+3. Buat hash password untuk akun admin awal: `php hash.php` lalu INSERT ke tabel `users`, atau login via `/login.php` setelahnya untuk membuat pengguna lain.
 
 ## Struktur Direktori
 - `includes/` utilitas bersama (koneksi PDO, autentikasi, CSRF, template, logger).

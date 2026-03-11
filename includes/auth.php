@@ -7,7 +7,10 @@ require_once __DIR__ . '/db.php';
 function start_session(): void
 {
     if (session_status() === PHP_SESSION_NONE) {
-        session_start();
+        session_start([
+            'cookie_httponly' => true,
+            'cookie_samesite' => 'Strict',
+        ]);
     }
 }
 
@@ -43,10 +46,12 @@ function require_login(): void
 function require_role(array $roles): void
 {
     $user = current_user();
-    if (!$user || !in_array($user['role'], $roles, true)) {
-        header('HTTP/1.1 403 Forbidden');
-        echo 'Akses ditolak';
+    if (!$user) {
+        header('Location: /login.php');
         exit;
+    }
+    if (!in_array($user['role'], $roles, true)) {
+        redirect_dashboard();
     }
 }
 

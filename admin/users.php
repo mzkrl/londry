@@ -35,7 +35,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmt = $pdo->prepare('INSERT INTO users (username, password, role) VALUES (:username, :password, :role)');
             try {
                 $stmt->execute([':username' => $username, ':password' => $hash, ':role' => $role]);
-                log_activity($pdo, 'Admin menambah user baru');
+                log_activity($pdo, 'Admin menambah user ' . $username);
                 flash('success', 'Pengguna berhasil ditambahkan.');
             } catch (PDOException $e) {
                 flash('error', 'Username sudah digunakan.');
@@ -68,7 +68,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         try {
             $stmt = $pdo->prepare($sql);
             $stmt->execute($params);
-            log_activity($pdo, 'Admin mengupdate user');
+            $logMsg = 'Admin mengupdate user ' . $username;
+            if (!$active) {
+                $logMsg = 'Admin menonaktifkan user ' . $username;
+            }
+            log_activity($pdo, $logMsg);
             flash('success', 'Pengguna berhasil diperbarui.');
         } catch (PDOException $e) {
             flash('error', 'Username sudah digunakan.');

@@ -26,14 +26,20 @@ if (!$transaction) {
     redirect('/kasir/index.php');
 }
 
-log_activity($pdo, 'Kasir mencetak bukti transaksi');
+// Only log once per transaction view (from redirect after creation)
+if (!empty($_GET['print'])) {
+    log_activity($pdo, 'Kasir mencetak bukti transaksi ' . $transaction['nomor_unik']);
+}
 
 render_header('Bukti Transaksi');
 ?>
 <div class="card">
     <div class="card-header d-flex justify-content-between align-items-center">
         <span>Bukti Transaksi</span>
-        <button class="btn btn-primary btn-sm" onclick="window.print()">Cetak</button>
+        <div>
+            <a href="/kasir/index.php" class="btn btn-secondary btn-sm me-2">Kembali</a>
+            <button class="btn btn-primary btn-sm" onclick="window.print()">Cetak</button>
+        </div>
     </div>
     <div class="card-body">
         <dl class="row">

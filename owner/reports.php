@@ -14,6 +14,14 @@ $pdo = get_pdo();
 
 $start = $_GET['start'] ?? '';
 $end = $_GET['end'] ?? '';
+$dateError = '';
+
+// Validate date range per F-010-RQ-002
+if ($start !== '' && $end !== '' && $start > $end) {
+    $dateError = 'Tanggal "Dari" tidak boleh lebih besar dari tanggal "Sampai".';
+    $start = '';
+    $end = '';
+}
 
 $conditions = [];
 $params = [];
@@ -39,6 +47,9 @@ $total = array_reduce($transactions, fn($carry, $item) => $carry + (float)$item[
 
 render_header('Owner - Laporan', 'reports');
 ?>
+<?php if ($dateError): ?>
+    <div class="alert alert-danger"><?= sanitize($dateError) ?></div>
+<?php endif; ?>
 <div class="card mb-3">
     <div class="card-header">Filter Tanggal</div>
     <div class="card-body">

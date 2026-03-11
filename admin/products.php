@@ -32,7 +32,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         } else {
             $stmt = $pdo->prepare('INSERT INTO products (nama_produk, harga_produk) VALUES (:nama_produk, :harga_produk)');
             $stmt->execute([':nama_produk' => $namaProduk, ':harga_produk' => $hargaProduk]);
-            log_activity($pdo, 'Admin menambah produk baru');
+            log_activity($pdo, 'Admin menambah produk ' . $namaProduk);
             flash('success', 'Produk berhasil ditambahkan.');
         }
         redirect('/admin/products.php');
@@ -48,7 +48,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             ':harga_produk' => $hargaProduk,
             ':id' => $id,
         ]);
-        log_activity($pdo, 'Admin mengupdate produk');
+        log_activity($pdo, 'Admin mengupdate produk ' . $namaProduk);
         flash('success', 'Produk berhasil diperbarui.');
         redirect('/admin/products.php');
     } elseif ($action === 'delete') {
@@ -58,9 +58,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             redirect('/admin/products.php');
         }
         try {
+            $nameStmt = $pdo->prepare('SELECT nama_produk FROM products WHERE id = :id');
+            $nameStmt->execute([':id' => $id]);
+            $deletedName = $nameStmt->fetchColumn() ?: 'ID ' . $id;
             $stmt = $pdo->prepare('DELETE FROM products WHERE id = :id');
             $stmt->execute([':id' => $id]);
-            log_activity($pdo, 'Admin menghapus produk');
+            log_activity($pdo, 'Admin menghapus produk ' . $deletedName);
             flash('success', 'Produk berhasil dihapus.');
         } catch (PDOException $e) {
             flash('error', 'Produk tidak dapat dihapus karena memiliki transaksi terkait.');

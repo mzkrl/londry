@@ -51,7 +51,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     $uangKembali = $uangBayar - $hargaProduk;
-    $nomorUnik = strtoupper(bin2hex(random_bytes(4)));
+
+    // Generate unique order number with collision retry per F-003-RQ-005
+    $maxRetries = 5;
+    $nomorUnik = '';
+    for ($i = 0; $i < $maxRetries; $i++) {
+        $nomorUnik = strtoupper(bin2hex(random_bytes(4)));
+        $check = $pdo->prepare('SELECT COUNT(*) FROM transactions WHERE nomor_unik = :nomor_unik');
+        $check->execute([':nomor_unik' => $nomorUnik]);
+        if ((int)$check->fetchColumn() === 0) {
+            break;
+        }
+    }
 
     $driver = $pdo->getAttribute(PDO::ATTR_DRIVER_NAME);
     if ($driver === 'pgsql') {
@@ -75,9 +86,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         ]);
         $transactionId = (int)$pdo->lastInsertId();
     }
-    log_activity($pdo, 'Kasir menambah transaksi baru');
+    log_activity($pdo, 'Kasir menambah transaksi ' . $nomorUnik . ' untuk ' . $namaPelanggan);
 
-    redirect('/kasir/receipt.php?id=' . $transactionId);
+    redirect('/kasir/receipt.php?id=' . $transactionId . '&print=1');
 }
 
 render_header('Kasir - Transaksi', 'kasir');

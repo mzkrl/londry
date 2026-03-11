@@ -34,3 +34,27 @@ CREATE TABLE IF NOT EXISTS log (
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT fk_log_users FOREIGN KEY (id_user) REFERENCES users (id)
 );
+
+
+# alternatif 
+
+-- CREATE TABLE IF NOT EXISTS transactions (
+--     id SERIAL PRIMARY KEY,
+--     id_produk BIGINT UNSIGNED NOT NULL,
+--     nama_pelanggan VARCHAR(150) NOT NULL,
+--     nomor_unik VARCHAR(50) NOT NULL UNIQUE,
+--     uang_bayar NUMERIC(12,2) NOT NULL CHECK (uang_bayar >= 0),
+--     uang_kembali NUMERIC(12,2) NOT NULL CHECK (uang_kembali >= 0),
+--     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+--     CONSTRAINT fk_transactions_products 
+--         FOREIGN KEY (id_produk) REFERENCES products (id)
+-- );
+
+-- CREATE TABLE IF NOT EXISTS log (
+--     id SERIAL PRIMARY KEY,
+--     id_user BIGINT UNSIGNED NOT NULL,
+--     activity TEXT NOT NULL,
+--     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+--     CONSTRAINT fk_log_users 
+--         FOREIGN KEY (id_user) REFERENCES users (id)
+-- );
